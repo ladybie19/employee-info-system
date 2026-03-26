@@ -1,0 +1,146 @@
+/* ================= ROOT VARIABLES ================= */
+:root {
+    --primary: #6a5acd;
+    --secondary: #93abe9;
+    --accent: #ffb703;
+    --dark: #2b2d42;
+}
+
+/* ================= GLOBAL ================= */
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ede7f6, #77e2ac);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    margin: 0;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+    background: linear-gradient(90deg, #6a5acd, #836fff);
+    color: #e9c3c3;
+}
+
+.navbar-brand,
+.navbar a,
+.nav-link {
+    color: #17d6d3 !important;
+    text-decoration: none;
+    font-weight: 500;
+    margin-right: 15px;
+}
+
+/* ================= CARDS ================= */
+.card {
+    background: #ccb7f8;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* ================= DASHBOARD STATS ================= */
+.stat-card {
+    background: #ebb3b3;
+    text-align: center;
+    padding: 20px;
+    border-radius: 14px;
+}
+
+.stat-card h2 {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* ================= BUTTONS ================= */
+.btn-primary {
+    background: var(--primary);
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: #5848c2;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+}
+
+/* ================= TABLE ================= */
+.table thead {
+    background: var(--primary);
+    color: #ccebe5;
+}
+
+/* ================= FORMS ================= */
+.form-control {
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.form-control:focus {
+    border-color: #512da8;
+    box-shadow: 0 0 0 0.15rem rgba(81, 45, 168, 0.25);
+}
+
+label {
+    font-weight: 500;
+}
+
+/* ================= LOGIN PAGE ================= */
+.login-box {
+    max-width: 380px;
+    margin: auto;
+    padding: 40px;
+    background: rgba(153, 236, 231, 0.95);
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(194, 155, 155, 0.25);
+}
+
+.login-box h3 {
+    font-weight: 700;
+    color: #8963e3;
+}
+
+.login-box p {
+    font-size: 14px;
+    color: #666;
+}
+
+.input-group-text {
+    background: #ede7f6;
+    border: none;
+    border-radius: 12px 0 0 12px;
+}
+
+.footer-text {
+    font-size: 12px;
+    color: #999;
+    margin-top: 20px;
+}
+
+/* ================= SIDE NAV ================= */
+.side-nav {
+    background: #70f3f5;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    height: 100%;
+}
+
+.side-nav a {
+    display: block;
+    padding: 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #512da8;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.side-nav a:hover {
+    background: #bc9ceb;
+}

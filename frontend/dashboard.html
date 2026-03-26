@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Employee Info System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h1>EmployeeHub</h1>
+                <span>Management System</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="active">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="employee-list.html">
+                    <span class="nav-icon">👥</span> Employees
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info" onclick="logout()">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div>
+                        <div class="user-name" id="user-display-name">Admin</div>
+                        <div class="user-role">Click to logout</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content fade-in">
+            <div class="page-header">
+                <div>
+                    <h2>Dashboard</h2>
+                    <p>Overview of your workforce statistics</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <h3>Total Employees</h3>
+                    <div class="value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <h3>Permanent</h3>
+                    <div class="value" id="stat-permanent">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <h3>Temporary</h3>
+                    <div class="value" id="stat-temporary">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚪</div>
+                    <h3>Separated</h3>
+                    <div class="value" id="stat-separated">0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Activities</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Details</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activities-table">
+                        <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/fetch.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

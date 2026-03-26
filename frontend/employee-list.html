@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees - Employee Info System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h1>EmployeeHub</h1>
+                <span>Management System</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="employee-list.html" class="active">
+                    <span class="nav-icon">👥</span> Employees
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info" onclick="logout()">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div>
+                        <div class="user-name" id="user-display-name">Admin</div>
+                        <div class="user-role">Click to logout</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content fade-in">
+            <div class="page-header">
+                <div>
+                    <h2>Employees</h2>
+                    <p>Manage your workforce records</p>
+                </div>
+                <button class="btn-primary" onclick="openModal('add')">+ Add Employee</button>
+            </div>
+            
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-bar" placeholder="Search by name or ID...">
+            </div>
+            
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employees-table">
+                        <tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Employee Modal -->
+    <div id="employee-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">Add Employee</h2>
+            <div id="modal-error" class="error hidden"></div>
+            
+            <form id="employee-form">
+                <input type="hidden" id="emp-id">
+                
+                <label>First Name</label>
+                <input type="text" id="first-name" placeholder="Enter first name" required>
+                
+                <label>Last Name</label>
+                <input type="text" id="last-name" placeholder="Enter last name" required>
+                
+                <label>Birthday</label>
+                <input type="date" id="birthday" required>
+                
+                <label>Status</label>
+                <select id="status" required>
+                    <option value="Permanent">Permanent</option>
+                    <option value="Temporary">Temporary</option>
+                    <option value="Separated">Separated</option>
+                </select>
+                
+                <label>Position</label>
+                <input type="text" id="position" placeholder="Enter position" required>
+                
+                <label>Date Hired</label>
+                <input type="date" id="date-hired" required>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="save-btn">Save Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/fetch.js"></script>
+    <script src="js/employees.js"></script>
+</body>
+</html>
