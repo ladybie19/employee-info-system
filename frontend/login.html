@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Employee Info System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-card fade-in">
+                <div class="login-brand">
+                    <div class="logo-icon">👤</div>
+                    <h2 id="form-title">Welcome Back</h2>
+                    <p id="form-subtitle">Sign in to your account</p>
+                </div>
+
+                <div id="error-msg" class="error text-center hidden"></div>
+                <div id="success-msg" class="success-msg text-center hidden"></div>
+
+                <form id="auth-form">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+
+                    <button type="submit" id="submit-btn" class="btn-primary" style="width: 100%; margin-top: 8px;">Sign In</button>
+                </form>
+
+                <div class="toggle-links">
+                    <span id="toggle-text">Don't have an account? </span>
+                    <a id="toggle-btn">Create one</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/fetch.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

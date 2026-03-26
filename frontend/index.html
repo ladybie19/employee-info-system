@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Employee System</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header>Employee Information System</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+    <h3>Login</h3>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="card" id="dashboardCard" style="display:none;">
+    <h3>Dashboard</h3>
+    <p id="dashboardData"></p>
+</div>
+
+<!-- ADD EMPLOYEE -->
+<div class="card" id="employeeCard" style="display:none;">
+    <h3>Add Employee</h3>
+    <input id="first_name" placeholder="First Name">
+    <input id="last_name" placeholder="Last Name">
+    <input id="birthday" type="date">
+
+    <select id="status">
+        <option>Permanent</option>
+        <option>Temporary</option>
+        <option>Separated</option>
+    </select>
+
+    <input id="position" placeholder="Position">
+    <input id="date_hired" type="date">
+
+    <button onclick="addEmployee()">Add</button>
+</div>
+
+<!-- TABLE -->
+<div class="card" id="tableCard" style="display:none;">
+    <h3>Employees</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="employeeTable"></tbody>
+    </table>
+</div>
+
+</div>
+
+<script>
+const API = "http://127.0.0.1:5000";
+
+// LOGIN
+function login(){
+    fetch(API+"/login",{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.status==="success"){
+            loginCard.style.display="none";
+            dashboardCard.style.display="block";
+            employeeCard.style.display="block";
+            tableCard.style.display="block";
+
+            loadDashboard();
+            loadEmployees();
+        } else {
+            alert("Login Failed");
+        }
+    });
+}
+
+// DASHBOARD
+function loadDashboard(){
+    fetch(API+"/dashboard")
+    .then(res=>res.json())
+    .then(data=>{
+        dashboardData.innerHTML = `
+        Total: ${data.total_employees}<br>
+        Permanent: ${data.permanent}<br>
+        Temporary: ${data.temporary}<br>
+        Separated: ${data.separated}
+        `;
+    });
+}
+
+// EMPLOYEES
+function loadEmployees(){
+    fetch(API+"/employees")
+    .then(res=>res.json())
+    .then(data=>{
+        let html="";
+        data.forEach(e=>{
+            html+=`
+            <tr>
+                <td>${e.employee_id}</td>
+                <td>${e.first_name} ${e.last_name}</td>
+                <td>${e.position}</td>
+                <td>${e.status}</td>
+                <td>
+                    <button onclick="del(${e.employee_id})">Delete</button>
+                </td>
+            </tr>`;
+        });
+        employeeTable.innerHTML=html;
+    });
+}
+
+// ADD
+function addEmployee(){
+    fetch(API+"/employees",{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            first_name:first_name.value,
+            last_name:last_name.value,
+            birthday:birthday.value,
+            status:status.value,
+            position:position.value,
+            date_hired:date_hired.value
+        })
+    }).then(()=>{
+        loadEmployees();
+        loadDashboard();
+    });
+}
+
+// DELETE
+function del(id){
+    fetch(API+"/employees/"+id,{method:"DELETE"})
+    .then(()=>{
+        loadEmployees();
+        loadDashboard();
+    });
+}
+</script>
+
+</body>
+</html>
