@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Profile - Employee Info System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h1>EmployeeHub</h1>
+                <span>Management System</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="employee-list.html" class="active">
+                    <span class="nav-icon">👥</span> Employees
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info" onclick="logout()">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div>
+                        <div class="user-name" id="user-display-name">Admin</div>
+                        <div class="user-role">Click to logout</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content fade-in">
+            <a href="employee-list.html" class="btn-ghost btn-sm mb-3" style="display:inline-flex; text-decoration:none;">← Back to Employees</a>
+            
+            <div class="card" id="info-card">
+                <div class="page-header" style="margin-bottom:0">
+                    <div>
+                        <h2 id="employee-name">Loading...</h2>
+                        <p id="employee-position" class="text-muted">...</p>
+                    </div>
+                    <span id="employee-badge"></span>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Employee ID</div>
+                        <div class="info-val" id="info-id">...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-val" id="info-status">...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Position</div>
+                        <div class="info-val" id="info-position">...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Birthday</div>
+                        <div class="info-val" id="info-birthday">...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date Hired</div>
+                        <div class="info-val" id="info-hired">...</div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" id="btn-trainings">📚 View Trainings</button>
+                    <button class="btn-secondary" id="btn-service">📋 Service Record</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/fetch.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const empId = urlParams.get('id');
+
+        if (!empId) {
+            alert('No Employee ID provided');
+            window.location.href = 'employee-list.html';
+        }
+
+        // Set user display
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.username) {
+            document.getElementById('user-display-name').textContent = user.username;
+            document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
+        }
+
+        function getStatusBadge(status) {
+            const classes = { 'Permanent': 'badge-success', 'Temporary': 'badge-warning', 'Separated': 'badge-danger' };
+            return `<span class="badge ${classes[status] || 'badge-warning'}">${status}</span>`;
+        }
+
+        async function loadEmployeeInfo() {
+            try {
+                const emp = await apiCall(`/employees/${empId}`);
+                document.getElementById('employee-name').textContent = `${emp.first_name} ${emp.last_name}`;
+                document.getElementById('employee-position').textContent = emp.position;
+                document.getElementById('employee-badge').innerHTML = getStatusBadge(emp.status);
+                document.getElementById('info-id').textContent = emp._id;
+                document.getElementById('info-status').textContent = emp.status;
+                document.getElementById('info-position').textContent = emp.position;
+                document.getElementById('info-birthday').textContent = emp.birthday;
+                document.getElementById('info-hired').textContent = emp.date_hired;
+                
+                document.getElementById('btn-trainings').onclick = () => {
+                    window.location.href = `trainings.html?id=${emp._id}&name=${encodeURIComponent(emp.first_name + ' ' + emp.last_name)}`;
+                };
+                document.getElementById('btn-service').onclick = () => {
+                    window.location.href = `service-record.html?id=${emp._id}&name=${encodeURIComponent(emp.first_name + ' ' + emp.last_name)}`;
+                };
+            } catch (err) {
+                console.error('Error fetching info', err);
+                document.getElementById('info-card').innerHTML = '<h2 class="error">Employee not found.</h2>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadEmployeeInfo);
+    </script>
+</body>
+</html>
