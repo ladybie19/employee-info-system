@@ -2,8 +2,13 @@
 let trendChart = null;
 
 // Chart color palette
+const getThemeColor = () => localStorage.getItem('theme-accent-color') || '#bc13fe';
+const themeHex = getThemeColor();
+const themeRgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(themeHex);
+const themeRgbStr = themeRgb ? `${parseInt(themeRgb[1], 16)}, ${parseInt(themeRgb[2], 16)}, ${parseInt(themeRgb[3], 16)}` : '188, 19, 254';
+
 const CHART_COLORS = [
-    'rgba(188, 19, 254, 1)',    // purple
+    `rgba(${themeRgbStr}, 1)`,    // theme accent
     'rgba(0, 242, 255, 1)',     // cyan/blue
     'rgba(255, 0, 212, 1)',     // pink
     'rgba(255, 204, 0, 1)',     // yellow
@@ -15,7 +20,7 @@ const CHART_COLORS_ALPHA = CHART_COLORS.map(c => c.replace(', 1)', ', 0.15)'));
 
 // Global Chart.js defaults for dark theme
 Chart.defaults.color = '#d1d5db';
-Chart.defaults.borderColor = 'rgba(188, 19, 254, 0.1)';
+Chart.defaults.borderColor = `rgba(${themeRgbStr}, 0.1)`;
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size = 12;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
