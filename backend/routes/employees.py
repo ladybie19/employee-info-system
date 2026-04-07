@@ -14,21 +14,30 @@ def get_dashboard_stats():
     }
 
     activities = db.execute_query(
-        "SELECT activity_id, employee_id, activity, created_at FROM activities ORDER BY created_at DESC LIMIT 10",
+        """SELECT a.activity_id, a.employee_id, a.activity, a.created_at, e.first_name, e.last_name 
+           FROM activities a 
+           LEFT JOIN employees e ON a.employee_id = e.employee_id 
+           ORDER BY a.created_at DESC LIMIT 10""",
         fetch=True
     )
     for act in activities:
         if act.get('created_at'):
             act['timestamp'] = act['created_at'].isoformat()
-            act['action'] = act.get('activity', '')
-            act['details'] = f"Employee ID: {act.get('employee_id', 'N/A')}"
+        else:
+            act['timestamp'] = None
+        act['action'] = act.get('activity', '')
+        
+        if act.get('first_name'):
+            act['details'] = f"{act['first_name']} {act['last_name']} (ID: {act['employee_id']})"
+        else:
+            act['details'] = f"System / Unknown (ID: {act.get('employee_id') if act.get('employee_id') is not None else 'N/A'})"
 
     return jsonify({
         "summary": {
-            "total": stats.get("total_employees", 0),
-            "permanent": stats.get("permanent", 0),
-            "temporary": stats.get("temporary", 0),
-            "separated": stats.get("separated", 0)
+            "total": int(stats.get("total_employees") or 0),
+            "permanent": int(stats.get("permanent") or 0),
+            "temporary": int(stats.get("temporary") or 0),
+            "separated": int(stats.get("separated") or 0)
         },
         "activities": activities
     }), 200

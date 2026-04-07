@@ -79,6 +79,19 @@ CREATE TABLE activities (
 );
 
 -- =====================================
+-- ATTENDANCE
+-- =====================================
+CREATE TABLE IF NOT EXISTS attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT,
+    status ENUM('Present', 'Absent', 'Late', 'On Leave') DEFAULT 'Present',
+    date DATE DEFAULT (CURRENT_DATE),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =====================================
 -- DASHBOARD VIEW
 -- =====================================
 CREATE VIEW dashboard_summary AS

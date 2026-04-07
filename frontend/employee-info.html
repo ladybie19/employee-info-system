@@ -74,6 +74,101 @@
                     <button class="btn-secondary" id="btn-service">📋 Service Record</button>
                 </div>
             </div>
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>Attendance Tracking</h3>
+                    <div class="calendar-nav">
+                        <button class="btn-ghost btn-sm" onclick="changeMonth(-1)">Prev</button>
+                        <span id="calendar-month-year" class="calendar-title" style="margin: 0 12px; min-width: 120px; text-align: center; display: inline-block;">April 2026</span>
+                        <button class="btn-ghost btn-sm" onclick="changeMonth(1)">Next</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <!-- Calendar Grid -->
+                    <div style="flex: 2;">
+                        <div class="calendar-container mt-0">
+                            <div class="calendar-grid" id="calendar-grid-header">
+                                <div class="calendar-day-header">Sun</div>
+                                <div class="calendar-day-header">Mon</div>
+                                <div class="calendar-day-header">Tue</div>
+                                <div class="calendar-day-header">Wed</div>
+                                <div class="calendar-day-header">Thu</div>
+                                <div class="calendar-day-header">Fri</div>
+                                <div class="calendar-day-header">Sat</div>
+                            </div>
+                            <div class="calendar-grid" id="calendar-grid-body">
+                                <!-- Calendar days injected here -->
+                            </div>
+                        </div>
+
+                        <!-- Monthly Stats -->
+                        <div class="monthly-stats">
+                            <div class="monthly-stat-item">
+                                <span class="monthly-stat-value" id="stat-present">0</span>
+                                <span class="monthly-stat-label">Present</span>
+                            </div>
+                            <div class="monthly-stat-item">
+                                <span class="monthly-stat-value" id="stat-absent">0</span>
+                                <span class="monthly-stat-label">Absent</span>
+                            </div>
+                            <div class="monthly-stat-item">
+                                <span class="monthly-stat-value" id="stat-late">0</span>
+                                <span class="monthly-stat-label">Late</span>
+                            </div>
+                            <div class="monthly-stat-item">
+                                <span class="monthly-stat-value" id="stat-leave">0</span>
+                                <span class="monthly-stat-label">On Leave</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions & Recent -->
+                    <div style="flex: 1; border-left: 1px solid var(--border-color); padding-left: 20px; display: flex; flex-direction: column;">
+                        <div class="mb-4">
+                            <label>Today's Status</label>
+                            <div class="flex gap-2">
+                                <select id="attendance-status" onchange="recordAttendance(this.value)" style="flex: 1; margin-bottom: 0;">
+                                    <option value="">-- Mark --</option>
+                                    <option value="Present">Present</option>
+                                    <option value="Absent">Absent</option>
+                                    <option value="Late">Late</option>
+                                    <option value="On Leave">On Leave</option>
+                                </select>
+                            </div>
+                            <div id="last-marked" style="font-size:0.8rem; color:var(--text-secondary); margin-top:4px;"></div>
+                        </div>
+
+                        <div class="monthly-history-container" style="flex: 1;">
+                            <label>Monthly Records</label>
+                            <div id="monthly-summary-list" style="max-height: 300px; overflow-y: auto; font-size: 0.85rem;">
+                                <!-- Monthly summaries injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>Detailed Logs</h3>
+                    <button class="btn-ghost btn-sm" onclick="exportAttendance()">📥 Export CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-full-list">
+                            <!-- Full logs injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -99,6 +194,11 @@
             return `<span class="badge ${classes[status] || 'badge-warning'}">${status}</span>`;
         }
 
+
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let attendanceData = [];
+
         async function loadEmployeeInfo() {
             try {
                 const emp = await apiCall(`/employees/${empId}`);
@@ -117,10 +217,241 @@
                 document.getElementById('btn-service').onclick = () => {
                     window.location.href = `service-record.html?id=${emp._id}&name=${encodeURIComponent(emp.first_name + ' ' + emp.last_name)}`;
                 };
+
+                await loadAttendance();
             } catch (err) {
                 console.error('Error fetching info', err);
                 document.getElementById('info-card').innerHTML = '<h2 class="error">Employee not found.</h2>';
             }
+        }
+
+        async function loadAttendance() {
+            try {
+                attendanceData = await apiCall(`/attendance/employee/${empId}`);
+                renderCalendar();
+                renderMonthlySummary();
+                renderFullLogs();
+                checkTodayStatus();
+            } catch (err) {
+                console.error('Error fetching attendance', err);
+            }
+        }
+
+        function checkTodayStatus() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayRecord = attendanceData.find(r => r.date === todayStr);
+            const statusSelect = document.getElementById('attendance-status');
+            const lastMarkedDiv = document.getElementById('last-marked');
+            
+            if (todayRecord) {
+                statusSelect.value = todayRecord.status;
+                lastMarkedDiv.innerHTML = `Last marked: <span class="badge ${getAttendanceBadgeClass(todayRecord.status)}">${todayRecord.status}</span>`;
+            } else {
+                statusSelect.value = "";
+                lastMarkedDiv.innerHTML = "Not yet marked for today";
+            }
+        }
+
+        function renderCalendar() {
+            const gridBody = document.getElementById('calendar-grid-body');
+            const monthYearLabel = document.getElementById('calendar-month-year');
+            gridBody.innerHTML = '';
+
+            const date = new Date(currentYear, currentMonth, 1);
+            monthYearLabel.textContent = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const firstDayIndex = date.getDay();
+            const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const prevLastDay = new Date(currentYear, currentMonth, 0).getDate();
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            let counts = { Present: 0, Absent: 0, Late: 0, 'On Leave': 0 };
+
+            // Prev month days
+            for (let i = firstDayIndex; i > 0; i--) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.textContent = prevLastDay - i + 1;
+                gridBody.appendChild(dayDiv);
+            }
+
+            // Current month days
+            for (let i = 1; i <= lastDay; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                
+                const curDateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                if (curDateStr === todayStr) dayDiv.classList.add('today');
+
+                const record = attendanceData.find(r => r.date === curDateStr);
+                dayDiv.innerHTML = `<span>${i}</span>`;
+                dayDiv.style.cursor = 'pointer';
+                dayDiv.onclick = () => openMarkModal(curDateStr);
+                
+                if (record) {
+                    counts[record.status]++;
+                    const dot = document.createElement('div');
+                    dot.className = `status-dot status-dot-${record.status.toLowerCase().replace(' ', '')}`;
+                    dayDiv.appendChild(dot);
+                    dayDiv.title = `${curDateStr}: ${record.status}`;
+                }
+
+                gridBody.appendChild(dayDiv);
+            }
+
+            // Next month days
+            const totalCells = gridBody.children.length;
+            for (let i = 1; i <= (42 - totalCells); i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.textContent = i;
+                gridBody.appendChild(dayDiv);
+            }
+
+            // Update stats
+            document.getElementById('stat-present').textContent = counts.Present;
+            document.getElementById('stat-absent').textContent = counts.Absent;
+            document.getElementById('stat-late').textContent = counts.Late;
+            document.getElementById('stat-leave').textContent = counts['On Leave'];
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        function renderMonthlySummary() {
+            const list = document.getElementById('monthly-summary-list');
+            list.innerHTML = '';
+            
+            // Group data by Month-Year
+            const summaries = {};
+            attendanceData.forEach(record => {
+                const date = new Date(record.date);
+                const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+                
+                if (!summaries[monthYear]) {
+                    summaries[monthYear] = { Present: 0, Absent: 0, Late: 0, 'On Leave': 0 };
+                }
+                summaries[monthYear][record.status]++;
+            });
+
+            // Convert object to array for sorting/display
+            const summaryArray = Object.keys(summaries).sort((a, b) => {
+                return new Date(b) - new Date(a);
+            });
+
+            if (summaryArray.length === 0) {
+                list.innerHTML = '<div class="text-muted p-3">No records yet.</div>';
+                return;
+            }
+
+            summaryArray.forEach(month => {
+                const s = summaries[month];
+                const total = s.Present + s.Absent + s.Late + s['On Leave'];
+                const rate = total > 0 ? Math.round((s.Present / total) * 100) : 0;
+                
+                const div = document.createElement('div');
+                div.className = 'monthly-summary-item';
+                div.style.padding = '12px';
+                div.style.marginBottom = '8px';
+                div.style.background = 'rgba(255,255,255,0.03)';
+                div.style.borderRadius = 'var(--radius-sm)';
+                div.style.borderLeft = `3px solid ${rate > 80 ? 'var(--success)' : rate > 50 ? 'var(--warning)' : 'var(--danger)'}`;
+                
+                div.innerHTML = `
+                    <div class="flex justify-between mb-1" style="font-weight: 700; color: var(--accent-light);">
+                        <span>${month}</span>
+                        <span>${rate}% Rate</span>
+                    </div>
+                    <div class="flex gap-3" style="font-size: 0.75rem; color: var(--text-secondary);">
+                        <span>✅ ${s.Present}</span>
+                        <span>❌ ${s.Absent}</span>
+                        <span>⏰ ${s.Late}</span>
+                        <span>🏖️ ${s['On Leave']}</span>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function renderFullLogs() {
+            const tbody = document.getElementById('attendance-full-list');
+            tbody.innerHTML = '';
+            
+            attendanceData.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${log.date}</td>
+                    <td><span class="badge ${getAttendanceBadgeClass(log.status)}">${log.status}</span></td>
+                    <td class="text-muted" style="font-size:0.75rem">${new Date(log.created_at).toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function getStatusColor(status) {
+            const colors = { Present: 'var(--success)', Absent: 'var(--danger)', Late: 'var(--warning)', 'On Leave': 'var(--info)' };
+            return colors[status] || 'var(--text-secondary)';
+        }
+
+        async function recordAttendance(status, date = null) {
+            if (!status) return;
+            try {
+                await apiCall('/attendance', 'POST', {
+                    employee_id: empId,
+                    status: status,
+                    date: date || new Date().toISOString().split('T')[0]
+                });
+                await loadAttendance();
+            } catch (err) {
+                alert('Failed to record: ' + err.message);
+            }
+        }
+
+        function openMarkModal(date) {
+            const status = prompt(`Mark attendance for ${date}:\n(Present, Absent, Late, On Leave)`, "Present");
+            if (status) {
+                const valid = ["Present", "Absent", "Late", "On Leave"];
+                const capitalized = status.split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
+                if (valid.includes(capitalized)) {
+                    recordAttendance(capitalized, date);
+                } else {
+                    alert("Invalid status. Please use: Present, Absent, Late, or On Leave");
+                }
+            }
+        }
+
+        function getAttendanceBadgeClass(status) {
+            const map = { 'Present': 'badge-success', 'Absent': 'badge-danger', 'Late': 'badge-warning', 'On Leave': 'badge-info' };
+            return map[status] || 'badge-secondary';
+        }
+
+        function exportAttendance() {
+            if (attendanceData.length === 0) return alert('No data to export');
+            
+            let csv = 'Date,Status,Created At\n';
+            attendanceData.forEach(r => {
+                csv += `${r.date},${r.status},${r.created_at}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `attendance_${empId}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         document.addEventListener('DOMContentLoaded', loadEmployeeInfo);

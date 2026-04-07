@@ -6,6 +6,8 @@ from routes.auth import auth_bp
 from routes.employees import employees_bp
 from routes.trainings import trainings_bp
 from routes.service_record import service_record_bp
+from routes.performance import performance_bp
+from routes.attendance import attendance_bp
 
 import os
 
@@ -20,11 +22,18 @@ app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(employees_bp, url_prefix='/api')
 app.register_blueprint(trainings_bp, url_prefix='/api')
 app.register_blueprint(service_record_bp, url_prefix='/api')
+app.register_blueprint(performance_bp, url_prefix='/api')
+app.register_blueprint(attendance_bp, url_prefix='/api')
 
 @app.route('/')
 def index():
     # Redirect root URL to the login page
     return app.send_static_file('login.html')
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    from flask import jsonify
+    return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
