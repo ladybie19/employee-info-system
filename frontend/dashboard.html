@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Employee Info System</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="app-layout">
@@ -65,7 +66,42 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section-header">
+                <h3>📈 Attendance Tracker</h3>
+            </div>
+
+
+            <div class="chart-card chart-card-wide">
+                <div class="chart-card-header">
+                    <h4>Attendance Trends</h4>
+                    <span class="chart-badge">Line Chart</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+
+            <!-- Today's Attendance -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>Today's Attendance</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-today-table">
+                        <tr><td colspan="2" class="text-center text-muted">No attendance marked yet for today</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="card mt-3">
                 <div class="card-header">
                     <h3>Recent Activities</h3>
                 </div>
@@ -84,6 +120,7 @@
             </div>
         </main>
     </div>
+
 
     <script src="js/fetch.js"></script>
     <script src="js/dashboard.js"></script>

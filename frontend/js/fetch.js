@@ -16,7 +16,16 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 
     try {
         const response = await fetch(`${API_URL}${endpoint}`, config);
-        const data = await response.json();
+        
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            if (!response.ok) {
+                throw new Error(`Server error (${response.status}). Is the backend or database running?`);
+            }
+            throw new Error("Invalid response format from server.");
+        }
         
         if (!response.ok) {
             throw new Error(data.error || 'Something went wrong');

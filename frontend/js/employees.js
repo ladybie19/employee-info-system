@@ -1,4 +1,13 @@
 let employeesData = [];
+let attendanceData = [];
+
+async function loadAttendance() {
+    try {
+        attendanceData = await apiCall('/attendance/today');
+    } catch (err) {
+        console.error('Failed to load attendance', err);
+    }
+}
 
 function initUser() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -10,6 +19,7 @@ function initUser() {
 
 async function loadEmployees() {
     try {
+        await loadAttendance();
         employeesData = await apiCall('/employees');
         renderTable(employeesData);
     } catch (err) {
@@ -24,6 +34,19 @@ function getStatusBadge(status) {
         'Separated': 'badge-danger'
     };
     return `<span class="badge ${classes[status] || 'badge-warning'}">${status}</span>`;
+}
+
+function getAttendanceBadge(empId) {
+    const record = attendanceData.find(a => String(a.employee_id) === String(empId));
+    if (!record) return `<button class="btn-ghost btn-sm" style="color:var(--text-muted)" onclick="openAttendanceModal('${empId}')">Mark</button>`;
+    
+    const classes = {
+        'Present': 'badge-success',
+        'Absent': 'badge-danger',
+        'Late': 'badge-warning',
+        'On Leave': 'badge-info'
+    };
+    return `<span class="badge ${classes[record.status] || 'badge-warning'}" onclick="openAttendanceModal('${empId}')" style="cursor:pointer">${record.status}</span>`;
 }
 
 function renderTable(data) {
@@ -42,6 +65,7 @@ function renderTable(data) {
             <td style="font-weight:600; color:var(--text-primary)">${emp.first_name}</td>
             <td>${emp.last_name}</td>
             <td>${getStatusBadge(emp.status)}</td>
+            <td>${getAttendanceBadge(emp._id)}</td>
             <td>
                 <div class="actions-cell">
                     <button class="btn-secondary btn-sm" onclick="window.location.href='employee-info.html?id=${emp._id}'">View</button>
@@ -60,7 +84,7 @@ document.getElementById('search-bar').addEventListener('input', (e) => {
     const filtered = employeesData.filter(emp => 
         emp.first_name.toLowerCase().includes(term) ||
         emp.last_name.toLowerCase().includes(term) ||
-        emp._id.toLowerCase().includes(term)
+        String(emp._id).toLowerCase().includes(term)
     );
     renderTable(filtered);
 });
@@ -80,7 +104,7 @@ function openModal(mode, id = null) {
     } else {
         document.getElementById('modal-title').textContent = 'Edit Employee';
         document.getElementById('save-btn').textContent = 'Update Employee';
-        const emp = employeesData.find(e => e._id === id);
+        const emp = employeesData.find(e => String(e._id) === String(id));
         if (emp) {
             document.getElementById('emp-id').value = emp._id;
             document.getElementById('first-name').value = emp.first_name;
@@ -134,6 +158,56 @@ async function deleteEmployee(id) {
         alert(err.message);
     }
 }
+
+// Attendance Modal
+const attendanceModal = document.getElementById('attendance-modal');
+const attendanceForm = document.getElementById('attendance-form');
+
+function openAttendanceModal(id) {
+    document.getElementById('attendance-error').classList.add('hidden');
+    const emp = employeesData.find(e => String(e._id) === String(id));
+    if (emp) {
+        document.getElementById('attendance-emp-id').value = emp._id;
+        document.getElementById('attendance-employee-name').textContent = `${emp.first_name} ${emp.last_name}`;
+        
+        // Default to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('attendance-date').value = today;
+        
+        // Find existing status if any
+        const record = attendanceData.find(a => String(a.employee_id) === String(id));
+        if (record) {
+            document.getElementById('attendance-status').value = record.status;
+        } else {
+            document.getElementById('attendance-status').value = 'Present';
+        }
+        
+        attendanceModal.classList.remove('hidden');
+    }
+}
+
+function closeAttendanceModal() {
+    attendanceModal.classList.add('hidden');
+}
+
+attendanceForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const body = {
+        employee_id: document.getElementById('attendance-emp-id').value,
+        status: document.getElementById('attendance-status').value,
+        date: document.getElementById('attendance-date').value
+    };
+    
+    try {
+        await apiCall('/attendance', 'POST', body);
+        closeAttendanceModal();
+        loadEmployees();
+    } catch (err) {
+        document.getElementById('attendance-error').textContent = err.message;
+        document.getElementById('attendance-error').classList.remove('hidden');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     initUser();

@@ -20,7 +20,7 @@ Open a terminal in the root directory (`employee-info-system`) and run:
 pip install -r requirements.txt
 
 # Start the Flask API
-python -m backend.app
+python app.py
 ```
 The backend will run on `http://localhost:5000`.
 

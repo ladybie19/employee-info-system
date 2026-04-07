@@ -56,6 +56,7 @@
                             <th>First Name</th>
                             <th>Last Name</th>
                             <th>Status</th>
+                            <th>Attendance</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -101,6 +102,35 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn-primary" id="save-btn">Save Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Modal -->
+    <div id="attendance-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Mark Attendance</h2>
+            <p id="attendance-employee-name" class="text-muted"></p>
+            <div id="attendance-error" class="error hidden"></div>
+            
+            <form id="attendance-form">
+                <input type="hidden" id="attendance-emp-id">
+                
+                <label>Status</label>
+                <select id="attendance-status" required>
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                    <option value="Late">Late</option>
+                    <option value="On Leave">On Leave</option>
+                </select>
+                
+                <label>Date</label>
+                <input type="date" id="attendance-date" required>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" onclick="closeAttendanceModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Attendance</button>
                 </div>
             </form>
         </div>
