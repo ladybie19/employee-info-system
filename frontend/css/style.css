@@ -4,41 +4,41 @@
    CSS VARIABLES
    ============================ */
 :root {
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #111827;
-    --bg-card: rgba(17, 24, 39, 0.7);
-    --bg-card-solid: #1a2233;
-    --bg-input: #0f1629;
-    --bg-sidebar: #0d1220;
-    --bg-hover: rgba(99, 102, 241, 0.08);
+    --bg-primary: #05070a;
+    --bg-secondary: #0a0d14;
+    --bg-card: rgba(15, 12, 41, 0.6);
+    --bg-card-solid: #151030;
+    --bg-input: #0c0b1e;
+    --bg-sidebar: #060812;
+    --bg-hover: rgba(188, 19, 254, 0.1);
 
-    --border-color: rgba(75, 85, 99, 0.3);
-    --border-focus: rgba(99, 102, 241, 0.5);
+    --border-color: rgba(188, 19, 254, 0.2);
+    --border-focus: rgba(255, 0, 212, 0.6);
 
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-primary: #f8faff;
+    --text-secondary: #d1d5db;
+    --text-muted: #94a3b8;
 
-    --accent: #6366f1;
-    --accent-light: #818cf8;
-    --accent-dark: #4f46e5;
-    --accent-glow: rgba(99, 102, 241, 0.15);
+    --accent: #bc13fe;
+    --accent-light: #d882ff;
+    --accent-dark: #7b00cc;
+    --accent-glow: rgba(188, 19, 254, 0.25);
 
-    --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
-    --gradient-secondary: linear-gradient(135deg, #3b82f6, #6366f1);
-    --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
-    --gradient-success: linear-gradient(135deg, #10b981, #059669);
-    --gradient-warning: linear-gradient(135deg, #f59e0b, #d97706);
+    --gradient-primary: linear-gradient(135deg, #4d5ef0, #bc13fe, #ff00d4);
+    --gradient-secondary: linear-gradient(135deg, #4d5ef0, #bc13fe);
+    --gradient-danger: linear-gradient(135deg, #ff0055, #ff00d4);
+    --gradient-success: linear-gradient(135deg, #00f2ff, #00d4ff);
+    --gradient-warning: linear-gradient(135deg, #ffcc00, #ff9900);
 
-    --danger: #ef4444;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --info: #3b82f6;
+    --danger: #ff0055;
+    --success: #00f2ff;
+    --warning: #ffcc00;
+    --info: #4d5ef0;
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 15px rgba(188, 19, 254, 0.4), 0 0 30px rgba(255, 0, 212, 0.2);
 
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -73,7 +73,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle background pattern */
+/* Neon background pattern */
 body::before {
     content: '';
     position: fixed;
@@ -82,9 +82,9 @@ body::before {
     right: 0;
     bottom: 0;
     background: 
-        radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
+        radial-gradient(ellipse at 15% 15%, rgba(188, 19, 254, 0.15) 0%, transparent 40%),
+        radial-gradient(ellipse at 85% 85%, rgba(255, 0, 212, 0.12) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(77, 94, 240, 0.08) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
 }
@@ -114,11 +114,12 @@ h1, h2, h3, h4 {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.3);
+    background: linear-gradient(to bottom, #4d5ef0, #bc13fe);
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.5);
+    background: linear-gradient(to bottom, #bc13fe, #ff00d4);
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* ============================
@@ -855,7 +856,8 @@ tbody tr:hover td {
 }
 
 .calendar-day:hover {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(188, 19, 254, 0.15);
+    box-shadow: 0 0 10px rgba(188, 19, 254, 0.3);
     transform: scale(1.05);
     z-index: 2;
 }
@@ -865,8 +867,9 @@ tbody tr:hover td {
 }
 
 .calendar-day.today {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(255, 0, 212, 0.15);
     border: 1px solid var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
     color: var(--accent-light);
     font-weight: 700;
 }
@@ -981,7 +984,7 @@ tbody tr:hover td {
 }
 .chart-card:hover {
     box-shadow: var(--shadow-lg), var(--shadow-glow);
-    border-color: rgba(99, 102, 241, 0.2);
+    border-color: rgba(188, 19, 254, 0.3);
 }
 
 .chart-card-wide {
@@ -1011,7 +1014,8 @@ tbody tr:hover td {
     letter-spacing: 0.06em;
     background: var(--accent-glow);
     color: var(--accent-light);
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(188, 19, 254, 0.3);
+    box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .chart-wrapper {
