@@ -3,21 +3,19 @@ let trendChart = null;
 
 // Chart color palette
 const CHART_COLORS = [
-    'rgba(99, 102, 241, 1)',    // indigo
-    'rgba(16, 185, 129, 1)',    // emerald
-    'rgba(245, 158, 11, 1)',    // amber
-    'rgba(239, 68, 68, 1)',     // red
-    'rgba(59, 130, 246, 1)',    // blue
-    'rgba(139, 92, 246, 1)',    // violet
-    'rgba(236, 72, 153, 1)',    // pink
-    'rgba(20, 184, 166, 1)',    // teal
+    'rgba(188, 19, 254, 1)',    // purple
+    'rgba(0, 242, 255, 1)',     // cyan/blue
+    'rgba(255, 0, 212, 1)',     // pink
+    'rgba(255, 204, 0, 1)',     // yellow
+    'rgba(77, 94, 240, 1)',     // indigo
+    'rgba(255, 0, 85, 1)',      // red-pink
 ];
 
 const CHART_COLORS_ALPHA = CHART_COLORS.map(c => c.replace(', 1)', ', 0.15)'));
 
 // Global Chart.js defaults for dark theme
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = 'rgba(75, 85, 99, 0.2)';
+Chart.defaults.color = '#d1d5db';
+Chart.defaults.borderColor = 'rgba(188, 19, 254, 0.1)';
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size = 12;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
@@ -118,55 +116,55 @@ function renderTrendChart(trends) {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
     
-    // Create gradient for Present
+    // Create gradients
     const presentGradient = ctx.createLinearGradient(0, 0, 0, 400);
-    presentGradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
-    presentGradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+    presentGradient.addColorStop(0, 'rgba(0, 242, 255, 0.2)');
+    presentGradient.addColorStop(1, 'rgba(0, 242, 255, 0)');
 
     const datasets = [
         {
             label: 'Present',
             data: trends.map(t => t.present),
-            borderColor: '#10b981',
+            borderColor: '#00f2ff',
             backgroundColor: presentGradient,
             borderWidth: 4,
-            pointBackgroundColor: '#10b981',
+            pointBackgroundColor: '#00f2ff',
             pointBorderColor: '#fff',
             pointBorderWidth: 2,
             pointRadius: 4,
             pointHoverRadius: 7,
             fill: true,
-            tension: 0.3,
+            tension: 0.4,
             z: 10
         },
         {
             label: 'Absent',
             data: trends.map(t => t.absent),
-            borderColor: '#ef4444',
+            borderColor: '#ff0055',
             backgroundColor: 'transparent',
             borderWidth: 3,
             borderDash: [5, 5],
-            pointBackgroundColor: '#ef4444',
+            pointBackgroundColor: '#ff0055',
             pointBorderColor: '#fff',
             pointBorderWidth: 2,
             pointRadius: 4,
             pointHoverRadius: 7,
             fill: false,
-            tension: 0.3
+            tension: 0.4
         },
         {
             label: 'Late',
             data: trends.map(t => t.late),
-            borderColor: '#f59e0b',
+            borderColor: '#bc13fe',
             backgroundColor: 'transparent',
             borderWidth: 3,
-            pointBackgroundColor: '#f59e0b',
+            pointBackgroundColor: '#bc13fe',
             pointBorderColor: '#fff',
             pointBorderWidth: 2,
             pointRadius: 4,
             pointHoverRadius: 7,
             fill: false,
-            tension: 0.3
+            tension: 0.4
         }
     ];
 
