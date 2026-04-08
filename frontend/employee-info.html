@@ -173,6 +173,34 @@
         </main>
     </div>
 
+    <!-- Attendance Status Modal -->
+    <div id="status-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 360px;">
+            <h2 id="modal-date-title" style="margin-bottom: 20px; font-size: 1.2rem;">Mark Attendance</h2>
+            <div class="status-buttons-grid">
+                <button class="btn-status btn-status-present" onclick="selectStatus('Present')">
+                    <span style="font-size: 1.4rem;">✅</span>
+                    <span>Present</span>
+                </button>
+                <button class="btn-status btn-status-absent" onclick="selectStatus('Absent')">
+                    <span style="font-size: 1.4rem;">❌</span>
+                    <span>Absent</span>
+                </button>
+                <button class="btn-status btn-status-late" onclick="selectStatus('Late')">
+                    <span style="font-size: 1.4rem;">⏰</span>
+                    <span>Late</span>
+                </button>
+                <button class="btn-status btn-status-leave" onclick="selectStatus('On Leave')">
+                    <span style="font-size: 1.4rem;">🏖️</span>
+                    <span>On Leave</span>
+                </button>
+            </div>
+            <div class="modal-actions mt-4">
+                <button class="btn-ghost" style="width: 100%;" onclick="closeMarkModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/fetch.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -418,16 +446,23 @@
             }
         }
 
+        let selectedDate = null;
+
         function openMarkModal(date) {
-            const status = prompt(`Mark attendance for ${date}:\n(Present, Absent, Late, On Leave)`, "Present");
-            if (status) {
-                const valid = ["Present", "Absent", "Late", "On Leave"];
-                const capitalized = status.split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
-                if (valid.includes(capitalized)) {
-                    recordAttendance(capitalized, date);
-                } else {
-                    alert("Invalid status. Please use: Present, Absent, Late, or On Leave");
-                }
+            selectedDate = date;
+            document.getElementById('modal-date-title').textContent = `Mark Attendance: ${date}`;
+            document.getElementById('status-modal').classList.remove('hidden');
+        }
+
+        function closeMarkModal() {
+            document.getElementById('status-modal').classList.add('hidden');
+            selectedDate = null;
+        }
+
+        function selectStatus(status) {
+            if (selectedDate) {
+                recordAttendance(status, selectedDate);
+                closeMarkModal();
             }
         }
 
