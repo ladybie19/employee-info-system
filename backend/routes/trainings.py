@@ -6,6 +6,12 @@ trainings_bp = Blueprint('trainings', __name__)
 
 @trainings_bp.route('/trainings/<int:employee_id>', methods=['GET'])
 def get_trainings(employee_id):
+    user_role = request.args.get('role', 'admin')
+    requesting_id = request.args.get('requesting_id')
+    
+    if user_role == 'employee' and str(employee_id) != str(requesting_id):
+        return jsonify({"error": "Employees can only view their own trainings."}), 403
+
     trainings = db.execute_query(
         """SELECT t.training_id, t.title, t.date, t.description AS institution
            FROM trainings t
@@ -24,6 +30,9 @@ def get_trainings(employee_id):
 @trainings_bp.route('/trainings', methods=['POST'])
 def add_training():
     data = request.json
+    user_role = data.get('user_role', 'admin')
+    if user_role == 'employee':
+        return jsonify({"error": "Unauthorized: Employees cannot add trainings."}), 403
 
     # Insert training
     training_id = db.execute_query(
@@ -47,6 +56,9 @@ def add_training():
 
 @trainings_bp.route('/trainings/<int:id>', methods=['DELETE'])
 def delete_training(id):
+    user_role = request.args.get('role', 'admin')
+    if user_role == 'employee':
+        return jsonify({"error": "Unauthorized: Employees cannot delete trainings."}), 403
     # Delete from junction table first, then training
     db.execute_query("DELETE FROM employee_trainings WHERE training_id = %s", (id,))
     db.execute_query("DELETE FROM trainings WHERE training_id = %s", (id,))

@@ -32,22 +32,26 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
-    if not data or not data.get('username') or not data.get('password'):
-        return jsonify({"error": "Missing username or password"}), 400
+    if not data or not data.get('username'):
+        return jsonify({"error": "Missing username"}), 400
 
     user = db.execute_query(
-        """SELECT u.user_id, u.username, u.password, u.role, u.employee_id, e.first_name, e.last_name 
-           FROM users u 
-           LEFT JOIN employees e ON u.employee_id = e.employee_id 
-           WHERE u.username = %s""",
+        """SELECT user_id, username, password, role, employee_id 
+           FROM users 
+           WHERE username = %s""",
         (data['username'],), fetchone=True
     )
 
     if user:
+        is_valid = False
         # Check if role is employee - no password required for employees
         if user['role'] == 'employee':
             is_valid = True
         else:
+            # For non-employees, password IS required
+            if not data.get('password'):
+                return jsonify({"error": "Password is required"}), 400
+
             # Check if DB password is a bcrypt hash or plain text (from db.sql seed)
             db_password = user['password']
             if db_password.startswith('$2b$'):
@@ -61,6 +65,13 @@ def login():
                 is_valid = (data.get('password') == db_password)
             
         if is_valid:
+            # Get employee details if linked
+            display_name = user['username']
+            if user['employee_id']:
+                emp = db.execute_query("SELECT first_name, last_name FROM employees WHERE employee_id = %s", (user['employee_id'],), fetchone=True)
+                if emp:
+                    display_name = f"{emp['first_name']} {emp['last_name']}"
+
             return jsonify({
                 "message": "Login successful",
                 "user": {
@@ -68,7 +79,7 @@ def login():
                     "id": str(user['user_id']),
                     "role": user['role'],
                     "employee_id": user['employee_id'],
-                    "display_name": f"{user['first_name']} {user['last_name']}" if user['first_name'] else user['username']
+                    "display_name": display_name
                 }
             }), 200
 

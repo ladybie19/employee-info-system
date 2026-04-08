@@ -1,6 +1,21 @@
 const API_URL = 'http://127.0.0.1:5000/api';
 
 async function apiCall(endpoint, method = 'GET', body = null) {
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    
+    // Add role and ID to URL for GET, or to body for others
+    let finalEndpoint = endpoint;
+    if (user) {
+        if (method === 'GET' || method === 'DELETE') {
+            const separator = endpoint.includes('?') ? '&' : '?';
+            finalEndpoint = `${endpoint}${separator}role=${user.role}&requesting_id=${user.employee_id || ''}`;
+        } else if (body) {
+            body.user_role = user.role;
+            body.requesting_employee_id = user.employee_id;
+        }
+    }
+
     const headers = {
         'Content-Type': 'application/json'
     };
@@ -15,7 +30,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     }
 
     try {
-        const response = await fetch(`${API_URL}${endpoint}`, config);
+        const response = await fetch(`${API_URL}${finalEndpoint}`, config);
         
         let data;
         try {

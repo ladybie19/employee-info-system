@@ -55,16 +55,8 @@ authForm.addEventListener('submit', async (e) => {
 
             localStorage.setItem('user', JSON.stringify(data.user));
             
-            if (data.user.role === 'admin') {
-                window.location.href = 'dashboard.html';
-            } else {
-                // Employee redirect to their profile/attendance
-                if (data.user.employee_id) {
-                    window.location.href = `employee-info.html?id=${data.user.employee_id}`;
-                } else {
-                    throw new Error('Employee record not found for this account.');
-                }
-            }
+            // Redirect both admins and employees to dashboard for now
+            window.location.href = 'dashboard.html';
         } else {
             successMsg.textContent = 'Registration successful! You can now sign in.';
             successMsg.classList.remove('hidden');

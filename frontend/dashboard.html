@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="js/theme.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
+
 <body>
     <div class="app-layout">
         <!-- Sidebar -->
@@ -17,6 +19,9 @@
                 <span>Management System</span>
             </div>
             <nav class="sidebar-nav">
+                <a href="javascript:void(0)" onclick="themeManager.toggleTheme()" id="theme-toggle-btn">
+                    <span class="nav-icon">🌗</span> light/dark
+                </a>
                 <a href="dashboard.html" class="active">
                     <span class="nav-icon">📊</span> Dashboard
                 </a>
@@ -71,23 +76,32 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <h3>🎨 Theme Customization</h3>
-                    <button class="btn-ghost btn-sm" onclick="themeManager.resetTheme(); location.reload();">Reset to Default</button>
+                    <button class="btn-ghost btn-sm" onclick="themeManager.resetTheme(); location.reload();">Reset to
+                        Default</button>
                 </div>
                 <div class="flex align-center gap-4" style="padding: 15px 0;">
                     <div style="flex: 1;">
                         <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 12px;">
-                            Drag the pointer around the color wheel to personalize your system's overall theme. This will automatically adjust accents, backgrounds, and gradients.
+                            Drag the pointer around the color wheel to personalize your system's overall theme. This
+                            will automatically adjust accents, backgrounds, and gradients.
                         </p>
                         <div class="flex align-center gap-3">
-                            <div id="current-color-preview" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; background: var(--accent);"></div>
-                            <span id="current-color-hex" style="font-family: monospace; font-weight: 600; color: var(--accent);">#bc13fe</span>
+                            <div id="current-color-preview"
+                                style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; background: var(--accent);">
+                            </div>
+                            <span id="current-color-hex"
+                                style="font-family: monospace; font-weight: 600; color: var(--accent);">#bc13fe</span>
                         </div>
                     </div>
-                    
+
                     <!-- Premium Color Wheel -->
                     <div class="color-wheel-container" style="position: relative; width: 140px; height: 140px;">
-                        <div id="color-wheel" style="width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red); cursor: crosshair; box-shadow: 0 0 20px rgba(0,0,0,0.3); border: 4px solid rgba(255,255,255,0.1);"></div>
-                        <div id="color-wheel-handle" style="position: absolute; width: 16px; height: 16px; border: 3px solid white; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5); background: var(--accent);"></div>
+                        <div id="color-wheel"
+                            style="width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red); cursor: crosshair; box-shadow: 0 0 20px rgba(0,0,0,0.3); border: 4px solid rgba(255,255,255,0.1);">
+                        </div>
+                        <div id="color-wheel-handle"
+                            style="position: absolute; width: 16px; height: 16px; border: 3px solid white; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5); background: var(--accent);">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,7 +114,7 @@
                 const handle = document.getElementById('color-wheel-handle');
                 const preview = document.getElementById('current-color-preview');
                 const hexLabel = document.getElementById('current-color-hex');
-                
+
                 let isDragging = false;
 
                 function updateColorFromPoint(x, y) {
@@ -109,24 +123,24 @@
                     const centerY = rect.height / 2;
                     const dx = x - (rect.left + centerX);
                     const dy = y - (rect.top + centerY);
-                    
+
                     // Calculate angle
                     let angle = Math.atan2(dy, dx) * (180 / Math.PI);
                     if (angle < 0) angle += 360;
-                    
+
                     // Calculate distance for handle positioning
-                    const distance = Math.min(Math.sqrt(dx*dx + dy*dy), centerX - 10);
+                    const distance = Math.min(Math.sqrt(dx * dx + dy * dy), centerX - 10);
                     const handleX = centerX + Math.cos(angle * Math.PI / 180) * distance;
                     const handleY = centerY + Math.sin(angle * Math.PI / 180) * distance;
-                    
+
                     handle.style.left = `${handleX}px`;
                     handle.style.top = `${handleY}px`;
-                    
+
                     // Angle to HSL Hue (conic gradient starts at top center)
                     // atan2 0 is at 3 o'clock. We need to shift by 90 deg.
                     const hue = (angle + 90) % 360;
-                    const hex = themeManager.hslToHex(hue, 85, 55); 
-                    
+                    const hex = themeManager.hslToHex(hue, 85, 55);
+
                     themeManager.applyTheme(hex);
                     hexLabel.textContent = hex.toUpperCase();
                     hexLabel.style.color = hex;
@@ -152,7 +166,7 @@
                     hexLabel.textContent = currentHex.toUpperCase();
                     hexLabel.style.color = currentHex;
                     preview.style.backgroundColor = currentHex;
-                    
+
                     const rgb = themeManager.hexToRgb(currentHex);
                     if (rgb) {
                         const hsl = themeManager.rgbToHsl(rgb.r, rgb.g, rgb.b);
@@ -200,7 +214,9 @@
                         </tr>
                     </thead>
                     <tbody id="attendance-today-table">
-                        <tr><td colspan="2" class="text-center text-muted">No attendance marked yet for today</td></tr>
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">No attendance marked yet for today</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -219,7 +235,9 @@
                         </tr>
                     </thead>
                     <tbody id="activities-table">
-                        <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Loading...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -231,4 +249,5 @@
     <script src="js/fetch.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
+
 </html>

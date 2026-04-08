@@ -49,6 +49,33 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Light Mode Variables */
+[data-theme="light"] {
+    --bg-primary: #f4f7fa;
+    --bg-secondary: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.8);
+    --bg-card-solid: #ffffff;
+    --bg-input: #ffffff;
+    --bg-sidebar: #ffffff;
+    --bg-hover: rgba(188, 19, 254, 0.05);
+
+    --border-color: rgba(188, 19, 254, 0.1);
+    --border-focus: rgba(255, 0, 212, 0.4);
+
+    --text-primary: #1a1c23;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+
+    --bg-glow-1: rgba(188, 19, 254, 0.05);
+    --bg-glow-2: rgba(255, 0, 212, 0.04);
+    --bg-glow-3: rgba(77, 94, 240, 0.03);
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 15px rgba(188, 19, 254, 0.15);
+}
+
 /* ============================
    RESET & BASE
    ============================ */
