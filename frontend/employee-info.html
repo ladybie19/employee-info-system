@@ -127,6 +127,27 @@
                     <!-- Actions & Recent -->
                     <div style="flex: 1; border-left: 1px solid var(--border-color); padding-left: 20px; display: flex; flex-direction: column;">
                         <div class="mb-4">
+                            <div class="flex flex-col gap-3 mb-4">
+                                <div class="flex justify-between gap-3">
+                                    <button class="btn-primary flex-1" onclick="submitTime('time_in')">
+                                        🕒 Time In
+                                    </button>
+                                    <button class="btn-secondary flex-1" onclick="submitTime('time_out')">
+                                        🚪 Time Out
+                                    </button>
+                                </div>
+                                <div class="flex justify-between text-center" style="font-size: 0.9rem;">
+                                    <div class="flex-1">
+                                        <div class="text-muted" style="font-size: 0.75rem;">Time In</div>
+                                        <div id="display-time-in" style="font-weight: 700; color: var(--accent-light);">--:--</div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-muted" style="font-size: 0.75rem;">Time Out</div>
+                                        <div id="display-time-out" style="font-weight: 700; color: var(--accent-light);">--:--</div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <label>Today's Status</label>
                             <div class="flex gap-2">
                                 <select id="attendance-status" onchange="recordAttendance(this.value)" style="flex: 1; margin-bottom: 0;">
@@ -213,9 +234,28 @@
 
         // Set user display
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user.username) {
-            document.getElementById('user-display-name').textContent = user.username;
-            document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
+        const isEmployee = user.role === 'employee';
+
+        // Check Access & Redirect if needed
+        if (isEmployee) {
+            // If they try to view someone else or no ID provided, redirect to themselves
+            if (!empId || empId !== String(user.employee_id)) {
+                window.location.href = `employee-info.html?id=${user.employee_id}`;
+            }
+            
+            // Hide admin-only elements
+            document.querySelector('.sidebar-nav a[href="employee-list.html"]')?.remove();
+            document.querySelector('.sidebar-nav a[href="dashboard.html"]')?.remove();
+            document.querySelector('a[href="employee-list.html"]')?.remove(); // Back button
+            document.querySelector('.action-buttons')?.remove(); // Trainings / Service Record buttons
+        } else if (!empId) {
+            alert('No Employee ID provided');
+            window.location.href = 'employee-list.html';
+        }
+
+        if (user.display_name) {
+            document.getElementById('user-display-name').textContent = user.display_name;
+            document.getElementById('user-avatar').textContent = user.display_name.charAt(0).toUpperCase();
         }
 
         function getStatusBadge(status) {
@@ -229,28 +269,45 @@
         let attendanceData = [];
 
         async function loadEmployeeInfo() {
+            if (!empId) return;
+
             try {
-                const emp = await apiCall(`/employees/${empId}`);
+                const res = await apiCall(`/employees/${empId}`);
+                const emp = res;
                 document.getElementById('employee-name').textContent = `${emp.first_name} ${emp.last_name}`;
                 document.getElementById('employee-position').textContent = emp.position;
                 document.getElementById('employee-badge').innerHTML = getStatusBadge(emp.status);
-                document.getElementById('info-id').textContent = emp._id;
+                document.getElementById('info-id').textContent = emp.employee_id;
                 document.getElementById('info-status').textContent = emp.status;
                 document.getElementById('info-position').textContent = emp.position;
                 document.getElementById('info-birthday').textContent = emp.birthday;
                 document.getElementById('info-hired').textContent = emp.date_hired;
                 
-                document.getElementById('btn-trainings').onclick = () => {
-                    window.location.href = `trainings.html?id=${emp._id}&name=${encodeURIComponent(emp.first_name + ' ' + emp.last_name)}`;
-                };
-                document.getElementById('btn-service').onclick = () => {
-                    window.location.href = `service-record.html?id=${emp._id}&name=${encodeURIComponent(emp.first_name + ' ' + emp.last_name)}`;
-                };
+                const btnTrainings = document.getElementById('btn-trainings');
+                if (btnTrainings) {
+                    btnTrainings.onclick = () => {
+                        window.location.href = `trainings.html?id=${emp.employee_id}&name=${encodeURIComponent(emp.first_name + ' ' + emp.last_name)}`;
+                    };
+                }
+
+                const btnService = document.getElementById('btn-service');
+                if (btnService) {
+                    btnService.onclick = () => {
+                        window.location.href = `service-record.html?id=${emp.employee_id}&name=${encodeURIComponent(emp.first_name + ' ' + emp.last_name)}`;
+                    };
+                }
 
                 await loadAttendance();
             } catch (err) {
                 console.error('Error fetching info', err);
-                document.getElementById('info-card').innerHTML = '<h2 class="error">Employee not found.</h2>';
+                document.getElementById('info-card').innerHTML = `
+                    <div class="text-center p-5">
+                        <h2 class="error mb-3">Employee Record Not Found</h2>
+                        <p class="text-muted">Requested ID: ${empId}</p>
+                        <p class="text-danger" style="font-size: 0.8rem; margin-top: 10px;">Error: ${err.message}</p>
+                        <button class="btn-ghost mt-3" onclick="location.reload()">🔄 Retry</button>
+                    </div>
+                `;
             }
         }
 
@@ -275,9 +332,31 @@
             if (todayRecord) {
                 statusSelect.value = todayRecord.status;
                 lastMarkedDiv.innerHTML = `Last marked: <span class="badge ${getAttendanceBadgeClass(todayRecord.status)}">${todayRecord.status}</span>`;
+                
+                document.getElementById('display-time-in').textContent = todayRecord.time_in || '--:--';
+                document.getElementById('display-time-out').textContent = todayRecord.time_out || '--:--';
             } else {
                 statusSelect.value = "";
                 lastMarkedDiv.innerHTML = "Not yet marked for today";
+                document.getElementById('display-time-in').textContent = '--:--';
+                document.getElementById('display-time-out').textContent = '--:--';
+            }
+        }
+
+        async function submitTime(type) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-GB', { hour12: false }); // HH:MM:SS
+            const body = {
+                employee_id: empId,
+                date: now.toISOString().split('T')[0]
+            };
+            body[type] = timeStr;
+
+            try {
+                await apiCall('/attendance', 'POST', body);
+                await loadAttendance();
+            } catch (err) {
+                alert('Action failed: ' + err.message);
             }
         }
 
@@ -418,8 +497,16 @@
             
             attendanceData.forEach(log => {
                 const tr = document.createElement('tr');
+                const timeIn = log.time_in ? `<div class="text-xs" style="color:var(--success); font-size: 0.7rem;">IN: ${log.time_in}</div>` : '';
+                const timeOut = log.time_out ? `<div class="text-xs" style="color:var(--danger); font-size: 0.7rem;">OUT: ${log.time_out}</div>` : '';
+                
                 tr.innerHTML = `
-                    <td>${log.date}</td>
+                    <td>
+                        <div style="font-weight: 600;">${log.date}</div>
+                        <div class="flex gap-2" style="margin-top: 4px;">
+                            ${timeIn} ${timeOut}
+                        </div>
+                    </td>
                     <td><span class="badge ${getAttendanceBadgeClass(log.status)}">${log.status}</span></td>
                     <td class="text-muted" style="font-size:0.75rem">${new Date(log.created_at).toLocaleString()}</td>
                 `;

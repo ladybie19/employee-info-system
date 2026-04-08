@@ -30,9 +30,18 @@ Chart.defaults.plugins.legend.labels.padding = 16;
 async function loadDashboard() {
     // Set user display
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.username) {
-        document.getElementById('user-display-name').textContent = user.username;
-        document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
+    
+    // Check Access
+    if (user.role === 'employee') {
+        if (user.employee_id) {
+            window.location.href = `employee-info.html?id=${user.employee_id}`;
+            return;
+        }
+    }
+
+    if (user.display_name) {
+        document.getElementById('user-display-name').textContent = user.display_name;
+        document.getElementById('user-avatar').textContent = user.display_name.charAt(0).toUpperCase();
     }
 
     try {
