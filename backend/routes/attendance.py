@@ -8,25 +8,36 @@ attendance_bp = Blueprint('attendance', __name__)
 def mark_attendance():
     data = request.json
     employee_id = data.get('employee_id')
-    status = data.get('status')
-    date = data.get('date', datetime.date.today().isoformat())
+    user_role = data.get('user_role', 'admin')
+    requesting_employee_id = data.get('requesting_employee_id')
     
-    # Get employee name for activity log
-    emp = db.execute_query(
-        "SELECT first_name, last_name FROM employees WHERE employee_id = %s",
-        (employee_id,), fetchone=True
+    status = data.get('status')
+    date_str = data.get('date', datetime.date.today().isoformat())
+    today = datetime.date.today().isoformat()
+
+    # 1. Employee Restriction: Can only update their own record
+    if user_role == 'employee' and str(employee_id) != str(requesting_employee_id):
+        return jsonify({"error": "Employees can only update their own attendance record."}), 403
+
+    # 2. Date Restriction: Employees can only update for the current day
+    if user_role == 'employee' and date_str != today:
+        return jsonify({"error": "Employees can only update attendance for the current day."}), 403
+
+    # 3. Leave Restriction: Cannot update if status is 'On Leave'
+    # Check current status in DB
+    current_record = db.execute_query(
+        "SELECT status FROM attendance WHERE employee_id = %s AND date = %s",
+        (employee_id, date_str), fetchone=True
     )
+    if current_record and current_record['status'] == 'On Leave' and user_role == 'employee':
+        return jsonify({"error": "Cannot update attendance record while on leave."}), 403
+
+    # Get employee name for log
+    emp = db.execute_query("SELECT first_name, last_name FROM employees WHERE employee_id = %s", (employee_id,), fetchone=True)
     emp_name = f"{emp['first_name']} {emp['last_name']}" if emp else "Unknown"
 
-    # Check if a record already exists
-    existing = db.execute_query(
-        "SELECT attendance_id FROM attendance WHERE employee_id = %s AND date = %s",
-        (employee_id, date),
-        fetchone=True
-    )
-    
-    if existing:
-        # If updating status, or if updating times
+    if current_record:
+        # Update existing record
         set_parts = []
         params = []
         if status:
@@ -42,38 +53,35 @@ def mark_attendance():
         if not set_parts:
             return jsonify({"message": "No data to update"}), 400
 
-        query = f"UPDATE attendance SET {', '.join(set_parts)} WHERE attendance_id = %s"
-        params.append(existing['attendance_id'])
+        query = f"UPDATE attendance SET {', '.join(set_parts)} WHERE employee_id = %s AND date = %s"
+        params.extend([employee_id, date_str])
         db.execute_query(query, tuple(params))
         message = f"Updated attendance for {emp_name}"
     else:
+        # Insert new record
         query = "INSERT INTO attendance (employee_id, status, date, time_in, time_out) VALUES (%s, %s, %s, %s, %s)"
         db.execute_query(query, (
             employee_id, 
             status or 'Present', 
-            date, 
+            date_str, 
             data.get('time_in'), 
             data.get('time_out')
         ))
         message = f"Marked {emp_name} as {status or 'Present'}"
         
-    db.log_activity(employee_id, f"Attendance activity for {emp_name}")
-    
+    db.log_activity(employee_id, f"Attendance update: {message}")
     return jsonify({"message": message}), 200
 
 @attendance_bp.route('/attendance/today', methods=['GET'])
 def get_today_attendance():
     today = datetime.date.today().isoformat()
     query = """
-        SELECT a.employee_id, a.status, a.time_in, a.time_out, e.first_name, e.last_name 
+        SELECT a.employee_id, a.status, e.first_name, e.last_name 
         FROM attendance a
         JOIN employees e ON a.employee_id = e.employee_id
         WHERE a.date = %s
     """
     attendance = db.execute_query(query, (today,), fetch=True)
-    for att in attendance:
-        if att.get('time_in'): att['time_in'] = str(att['time_in'])
-        if att.get('time_out'): att['time_out'] = str(att['time_out'])
     return jsonify(attendance), 200
 
 @attendance_bp.route('/attendance/trends', methods=['GET'])
@@ -98,6 +106,12 @@ def get_attendance_trends():
 
 @attendance_bp.route('/attendance/employee/<int:id>', methods=['GET'])
 def get_employee_attendance(id):
+    user_role = request.args.get('role', 'admin')
+    requesting_id = request.args.get('requesting_id')
+
+    if user_role == 'employee' and str(id) != str(requesting_id):
+        return jsonify({"error": "Employees can only view their own attendance record."}), 403
+
     query = """
         SELECT attendance_id, status, date, time_in, time_out, created_at 
         FROM attendance 
@@ -105,6 +119,7 @@ def get_employee_attendance(id):
         ORDER BY date DESC
     """
     attendance = db.execute_query(query, (id,), fetch=True)
+    
     # Convert dates and times to strings
     for entry in attendance:
         if entry.get('date'):
@@ -115,4 +130,5 @@ def get_employee_attendance(id):
             entry['time_out'] = str(entry['time_out'])
         if entry.get('created_at'):
             entry['created_at'] = entry['created_at'].isoformat()
+            
     return jsonify(attendance), 200

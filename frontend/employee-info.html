@@ -16,6 +16,9 @@
                 <span>Management System</span>
             </div>
             <nav class="sidebar-nav">
+                <a href="javascript:void(0)" onclick="themeManager.toggleTheme()" id="theme-toggle-btn">
+                    <span class="nav-icon">🌗</span> Toggle Theme
+                </a>
                 <a href="dashboard.html">
                     <span class="nav-icon">📊</span> Dashboard
                 </a>
@@ -243,11 +246,14 @@
                 window.location.href = `employee-info.html?id=${user.employee_id}`;
             }
             
-            // Hide admin-only elements
-            document.querySelector('.sidebar-nav a[href="employee-list.html"]')?.remove();
-            document.querySelector('.sidebar-nav a[href="dashboard.html"]')?.remove();
+            // Hide administrative navigation and sidebar
+            document.querySelector('.sidebar-nav')?.remove();
             document.querySelector('a[href="employee-list.html"]')?.remove(); // Back button
             document.querySelector('.action-buttons')?.remove(); // Trainings / Service Record buttons
+            
+            // Adjust header for restricted view
+            const pageHeader = document.querySelector('.page-header');
+            if (pageHeader) pageHeader.style.marginBottom = '20px';
         } else if (!empId) {
             alert('No Employee ID provided');
             window.location.href = 'employee-list.html';
@@ -272,16 +278,31 @@
             if (!empId) return;
 
             try {
-                const res = await apiCall(`/employees/${empId}`);
-                const emp = res;
-                document.getElementById('employee-name').textContent = `${emp.first_name} ${emp.last_name}`;
-                document.getElementById('employee-position').textContent = emp.position;
-                document.getElementById('employee-badge').innerHTML = getStatusBadge(emp.status);
-                document.getElementById('info-id').textContent = emp.employee_id;
-                document.getElementById('info-status').textContent = emp.status;
-                document.getElementById('info-position').textContent = emp.position;
-                document.getElementById('info-birthday').textContent = emp.birthday;
-                document.getElementById('info-hired').textContent = emp.date_hired;
+                const emp = await apiCall(`/employees/${empId}`);
+                
+                const nameEl = document.getElementById('employee-name');
+                if (nameEl) nameEl.textContent = `${emp.first_name} ${emp.last_name}`;
+                
+                const posEl = document.getElementById('employee-position');
+                if (posEl) posEl.textContent = emp.position;
+                
+                const badgeEl = document.getElementById('employee-badge');
+                if (badgeEl) badgeEl.innerHTML = getStatusBadge(emp.status);
+                
+                const idEl = document.getElementById('info-id');
+                if (idEl) idEl.textContent = emp.employee_id;
+                
+                const statusEl = document.getElementById('info-status');
+                if (statusEl) statusEl.textContent = emp.status;
+                
+                const posDetailEl = document.getElementById('info-position');
+                if (posDetailEl) posDetailEl.textContent = emp.position;
+                
+                const bdayEl = document.getElementById('info-birthday');
+                if (bdayEl) bdayEl.textContent = emp.birthday;
+                
+                const hiredEl = document.getElementById('info-hired');
+                if (hiredEl) hiredEl.textContent = emp.date_hired;
                 
                 const btnTrainings = document.getElementById('btn-trainings');
                 if (btnTrainings) {
@@ -300,14 +321,17 @@
                 await loadAttendance();
             } catch (err) {
                 console.error('Error fetching info', err);
-                document.getElementById('info-card').innerHTML = `
-                    <div class="text-center p-5">
-                        <h2 class="error mb-3">Employee Record Not Found</h2>
-                        <p class="text-muted">Requested ID: ${empId}</p>
-                        <p class="text-danger" style="font-size: 0.8rem; margin-top: 10px;">Error: ${err.message}</p>
-                        <button class="btn-ghost mt-3" onclick="location.reload()">🔄 Retry</button>
-                    </div>
-                `;
+                const infoCard = document.getElementById('info-card');
+                if (infoCard) {
+                    infoCard.innerHTML = `
+                        <div class="text-center p-5">
+                            <h2 class="error mb-3">Employee Record Not Found</h2>
+                            <p class="text-muted">Requested ID: ${empId}</p>
+                            <p class="text-danger" style="font-size: 0.8rem; margin-top: 10px;">Error: ${err.message}</p>
+                            <button class="btn-ghost mt-3" onclick="location.reload()">🔄 Retry</button>
+                        </div>
+                    `;
+                }
             }
         }
 

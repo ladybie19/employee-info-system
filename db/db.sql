@@ -12,7 +12,10 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(20) DEFAULT 'admin',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    employee_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+        ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- =====================================
@@ -86,6 +89,8 @@ CREATE TABLE IF NOT EXISTS attendance (
     employee_id INT,
     status ENUM('Present', 'Absent', 'Late', 'On Leave') DEFAULT 'Present',
     date DATE DEFAULT (CURRENT_DATE),
+    time_in TIME NULL,
+    time_out TIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
         ON DELETE CASCADE ON UPDATE CASCADE
@@ -107,9 +112,12 @@ FROM employees;
 -- =====================================
 
 -- USERS
-INSERT INTO users (username, password, role) VALUES
-('admin', 'admin123', 'admin'),
-('staff1', 'staff123', 'staff');
+INSERT INTO users (username, password, role, employee_id) VALUES
+('admin', 'admin123', 'admin', NULL),
+('staff1', 'staff123', 'employee', 1),
+('Juan', 'password123', 'employee', 1),
+('Maria', 'password123', 'employee', 2),
+('Pedro', 'password123', 'employee', 3);
 
 -- EMPLOYEES
 INSERT INTO employees (first_name, last_name, birthday, status, position, date_hired) VALUES

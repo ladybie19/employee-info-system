@@ -15,9 +15,31 @@ const themeManager = {
     },
 
     /**
-     * Initialize theme - apply saved color if exists
+     * Initialize theme - apply saved color and light/dark preference
      */
     init() {
+        // Apply saved accent color
+        const savedColor = localStorage.getItem('theme-accent-color');
+        if (savedColor) {
+            this.applyTheme(savedColor);
+        }
+
+        // Apply saved light/dark mode
+        const savedTheme = localStorage.getItem('app-theme') || 'dark';
+        this.setTheme(savedTheme);
+    },
+
+    setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('app-theme', theme);
+    },
+
+    toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const target = current === 'dark' ? 'light' : 'dark';
+        this.setTheme(target);
+
+        // Re-apply accent color to handle background logic (apply/remove derived backgrounds)
         const savedColor = localStorage.getItem('theme-accent-color');
         if (savedColor) {
             this.applyTheme(savedColor);
@@ -58,6 +80,8 @@ const themeManager = {
 
         // Set CSS variables
         const root = document.documentElement;
+        const currentTheme = root.getAttribute('data-theme') || 'dark';
+
         root.style.setProperty('--accent', hex);
         root.style.setProperty('--accent-light', lightColor);
         root.style.setProperty('--accent-dark', darkColor);
@@ -65,15 +89,25 @@ const themeManager = {
         root.style.setProperty('--bg-hover', hoverColor);
         root.style.setProperty('--border-color', borderColor);
         
-        // Update backgrounds for "Overall" theme change
-        root.style.setProperty('--bg-primary', bgPrimary);
-        root.style.setProperty('--bg-secondary', bgSecondary);
-        root.style.setProperty('--bg-sidebar', bgSidebar);
-        
-        // Set glow variables
-        root.style.setProperty('--bg-glow-1', glow1);
-        root.style.setProperty('--bg-glow-2', glow2);
-        root.style.setProperty('--bg-glow-3', glow3);
+        // Update backgrounds for "Overall" theme change - ONLY in dark mode
+        if (currentTheme === 'dark') {
+            root.style.setProperty('--bg-primary', bgPrimary);
+            root.style.setProperty('--bg-secondary', bgSecondary);
+            root.style.setProperty('--bg-sidebar', bgSidebar);
+            
+            // Set glow variables
+            root.style.setProperty('--bg-glow-1', glow1);
+            root.style.setProperty('--bg-glow-2', glow2);
+            root.style.setProperty('--bg-glow-3', glow3);
+        } else {
+            // Remove override properties so light mode CSS takes over
+            root.style.removeProperty('--bg-primary');
+            root.style.removeProperty('--bg-secondary');
+            root.style.removeProperty('--bg-sidebar');
+            root.style.removeProperty('--bg-glow-1');
+            root.style.removeProperty('--bg-glow-2');
+            root.style.removeProperty('--bg-glow-3');
+        }
         
         // Update gradients
         root.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${deepDarkColor}, ${hex}, ${veryLightColor})`);

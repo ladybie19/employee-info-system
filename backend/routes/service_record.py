@@ -6,6 +6,12 @@ service_record_bp = Blueprint('service_record', __name__)
 
 @service_record_bp.route('/service-records/<int:employee_id>', methods=['GET'])
 def get_records(employee_id):
+    user_role = request.args.get('role', 'admin')
+    requesting_id = request.args.get('requesting_id')
+    
+    if user_role == 'employee' and str(employee_id) != str(requesting_id):
+        return jsonify({"error": "Employees can only view their own service records."}), 403
+
     records = db.execute_query(
         """SELECT service_id, employee_id, position, start_date, end_date, remarks
            FROM service_records WHERE employee_id = %s
@@ -24,6 +30,9 @@ def get_records(employee_id):
 @service_record_bp.route('/service-records', methods=['POST'])
 def add_record():
     data = request.json
+    user_role = data.get('user_role', 'admin')
+    if user_role == 'employee':
+        return jsonify({"error": "Unauthorized: Employees cannot add service records."}), 403
     record_id = db.execute_query(
         """INSERT INTO service_records (employee_id, position, start_date, end_date, remarks) 
            VALUES (%s, %s, %s, %s, %s)""",
@@ -45,6 +54,9 @@ def add_record():
 
 @service_record_bp.route('/service-records/<int:id>', methods=['DELETE'])
 def delete_record(id):
+    user_role = request.args.get('role', 'admin')
+    if user_role == 'employee':
+        return jsonify({"error": "Unauthorized: Employees cannot delete service records."}), 403
     db.execute_query("DELETE FROM service_records WHERE service_id = %s", (id,))
     db.log_activity(None, f"Deleted service record ID: {id}")
     return jsonify({"message": "Record deleted"}), 200
