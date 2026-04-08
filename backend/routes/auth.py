@@ -36,27 +36,40 @@ def login():
         return jsonify({"error": "Missing username or password"}), 400
 
     user = db.execute_query(
-        "SELECT user_id, username, password FROM users WHERE username = %s",
+        """SELECT u.user_id, u.username, u.password, u.role, u.employee_id, e.first_name, e.last_name 
+           FROM users u 
+           LEFT JOIN employees e ON u.employee_id = e.employee_id 
+           WHERE u.username = %s""",
         (data['username'],), fetchone=True
     )
 
     if user:
-        # Check if DB password is a bcrypt hash or plain text (from db.sql seed)
-        db_password = user['password']
-        if db_password.startswith('$2b$'):
-            # It's a bcrypt hash
-            try:
-                is_valid = bcrypt.checkpw(data['password'].encode('utf-8'), db_password.encode('utf-8'))
-            except ValueError:
-                is_valid = False
+        # Check if role is employee - no password required for employees
+        if user['role'] == 'employee':
+            is_valid = True
         else:
-            # It's plain text (e.g. 'admin123')
-            is_valid = (data['password'] == db_password)
+            # Check if DB password is a bcrypt hash or plain text (from db.sql seed)
+            db_password = user['password']
+            if db_password.startswith('$2b$'):
+                # It's a bcrypt hash
+                try:
+                    is_valid = bcrypt.checkpw(data.get('password', '').encode('utf-8'), db_password.encode('utf-8'))
+                except ValueError:
+                    is_valid = False
+            else:
+                # It's plain text (e.g. 'admin123')
+                is_valid = (data.get('password') == db_password)
             
         if is_valid:
             return jsonify({
                 "message": "Login successful",
-                "user": {"username": user['username'], "id": str(user['user_id'])}
+                "user": {
+                    "username": user['username'], 
+                    "id": str(user['user_id']),
+                    "role": user['role'],
+                    "employee_id": user['employee_id'],
+                    "display_name": f"{user['first_name']} {user['last_name']}" if user['first_name'] else user['username']
+                }
             }), 200
 
     return jsonify({"error": "Invalid credentials"}), 401

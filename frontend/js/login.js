@@ -7,7 +7,21 @@ const toggleText = document.getElementById('toggle-text');
 const errorMsg = document.getElementById('error-msg');
 const successMsg = document.getElementById('success-msg');
 
+const positionSelect = document.getElementById('position');
+const passwordGroup = document.getElementById('password-group');
+const passwordInput = document.getElementById('password');
+
 let isLogin = true;
+
+positionSelect.addEventListener('change', () => {
+    if (positionSelect.value === 'employee') {
+        passwordGroup.classList.add('hidden');
+        passwordInput.removeAttribute('required');
+    } else {
+        passwordGroup.classList.remove('hidden');
+        passwordInput.setAttribute('required', '');
+    }
+});
 
 toggleBtn.addEventListener('click', () => {
     isLogin = !isLogin;
@@ -28,13 +42,29 @@ authForm.addEventListener('submit', async (e) => {
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    const position = document.getElementById('position').value;
     
     try {
         const data = await apiCall(isLogin ? '/login' : '/register', 'POST', { username, password });
         
         if (isLogin) {
+            // Check if selected position matches user role
+            if (data.user.role !== position) {
+                throw new Error(`Invalid position selected for this account. This account is registered as ${data.user.role}.`);
+            }
+
             localStorage.setItem('user', JSON.stringify(data.user));
-            window.location.href = 'dashboard.html';
+            
+            if (data.user.role === 'admin') {
+                window.location.href = 'dashboard.html';
+            } else {
+                // Employee redirect to their profile/attendance
+                if (data.user.employee_id) {
+                    window.location.href = `employee-info.html?id=${data.user.employee_id}`;
+                } else {
+                    throw new Error('Employee record not found for this account.');
+                }
+            }
         } else {
             successMsg.textContent = 'Registration successful! You can now sign in.';
             successMsg.classList.remove('hidden');

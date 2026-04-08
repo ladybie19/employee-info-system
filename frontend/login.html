@@ -24,8 +24,16 @@
                     <label for="username">Username</label>
                     <input type="text" id="username" placeholder="Enter your username" required>
 
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <div id="password-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+
+                    <label for="position">Position</label>
+                    <select id="position" required style="width: 100%; padding: 12px; margin-bottom: 16px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+                        <option value="admin">Admin</option>
+                        <option value="employee">Employee</option>
+                    </select>
 
                     <button type="submit" id="submit-btn" class="btn-primary" style="width: 100%; margin-top: 8px;">Sign In</button>
                 </form>
